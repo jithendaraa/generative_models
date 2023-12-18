@@ -1,0 +1,8 @@
+*/gt_images/
+*/results/
+*/wandb/
+*/__pycache__/
+*/mnist_data/
+*.png
+
+
