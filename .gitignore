@@ -4,5 +4,8 @@
 */__pycache__/
 */mnist_data/
 *.png
+diffusion_torch/MNIST/
+*.gz
+
 
 
