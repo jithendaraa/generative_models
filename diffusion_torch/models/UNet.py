@@ -10,8 +10,8 @@ class Block(nn.Module):
             self.conv1 = nn.Conv2d(2*in_ch, out_ch, 3, padding=1)
             self.transform = nn.ConvTranspose2d(out_ch, out_ch, 4, 2, 1)
         else:
-            self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=2)
-            self.transform = nn.Conv2d(out_ch, out_ch, 4, 2, 2)
+            self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
+            self.transform = nn.Conv2d(out_ch, out_ch, 4, 2, 1)
 
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
         self.pool = nn.MaxPool2d(3, stride=2)
@@ -43,9 +43,9 @@ class SinusoidalPositionEmbeddings(nn.Module) :
 
 
 class SimpleUNet(nn.Module):
-    def __init__(self):
+    def __init__(self, channels):
         super().__init__()
-        image_channels = 3
+        image_channels = channels
         down_channels = (64, 128, 256, 512, 1024)
         up_channels = (1024, 512, 256, 128, 64)
         out_dim = 1
@@ -70,7 +70,7 @@ class SimpleUNet(nn.Module):
             Block(up_channels[i], up_channels[i+1], time_emb_dim, up=True) for i in range(len(up_channels) - 1)
         ])
 
-        self.output = nn.Conv2d(up_channels[-1], 3, out_dim)
+        self.output = nn.Conv2d(up_channels[-1], channels, out_dim)
 
     def forward(self, x, timestep):
         t = self.time_mlp(timestep)
@@ -80,7 +80,6 @@ class SimpleUNet(nn.Module):
         for down in self.downs:
             x = down(x, t)
             residual_inputs.append(x)
-            print(x.shape)
 
         for up in self.ups:
             residual_x = residual_inputs.pop()

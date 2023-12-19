@@ -24,6 +24,7 @@ def main(args):
     BASEDIR = "/home/mila/j/jithendaraa.subramanian/scratch"
     WANDB_PROJECT = "disentangle_diffusion"
     WAND_ENTITY = "jithendaraa"
+    CHANNELS = 1
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     data = load_transformed_dataset(args.data, img_size=IMG_SIZE)
@@ -39,7 +40,7 @@ def main(args):
 
     dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
-    model = SimpleUNet().to(device)
+    model = SimpleUNet(CHANNELS).to(device)
     diffuser = Diffusion(
         noise_steps=args.diffusion_timesteps, 
         beta_start=1e-4,
@@ -63,7 +64,7 @@ def main(args):
 
     @torch.no_grad()
     def sample_plot_image(device, timesteps, figname, img_size=IMG_SIZE):
-        img = torch.randn(1, 3, img_size, img_size).to(device)
+        img = torch.randn(1, CHANNELS, img_size, img_size).to(device)
         plt.figure(figsize=(15, 5))
         num_images = 10
         stepsize = int(timesteps / num_images)
@@ -99,7 +100,7 @@ def main(args):
             gt_image = batch[0].to(device)
             label = batch[1].to(device)
             if gt_image.shape[1] == 1:
-                gt_image = gt_image.expand(-1, 3, -1, -1)
+                gt_image = gt_image.expand(-1, CHANNELS, -1, -1)
             t = torch.randint(0, args.diffusion_timesteps, (args.batch_size, ), device=device).long()
             loss = get_loss(model, gt_image, t)
             loss.backward()
